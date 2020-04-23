@@ -1,0 +1,17 @@
+
+#+options: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
+#+options: author:t broken-links:nil c:nil creator:t
+#+options: d:(not "LOGBOOK") date:t e:t email:t f:t inline:t num:t
+#+options: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+options: timestamp:t title:t toc:t todo:t |:t
+#+title: README of inform.el
+#+author: H. Dieter Wilhelm
+#+email: dieter@duenenhof-wilhelm.de
+#+language: en
+#+select_tags: export
+#+exclude_tags: noexport
+
+Provide links from elisp symbols in Gnu-Emacs Info viewer to their
+help documentation.
+  
+[[file:inform.png][file:~/inform/inform.png]]
