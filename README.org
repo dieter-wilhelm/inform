@@ -14,4 +14,4 @@
 Provide links from elisp symbols in Gnu-Emacs Info viewer to their
 help documentation.
   
-[[file:inform.png][file:~/inform/inform.png]]
+[[file:inform.png]]
