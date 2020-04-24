@@ -13,5 +13,9 @@
 
 Provide links from elisp symbols in Gnu-Emacs Info viewer to their
 help documentation.
-  
-[[file:inform.png]]
+
+On the left hand side is a GNU-Emacs' *info* buffer with additonal
+links and right the *Help* buffer with the content of the respective
+link.
+
+ [[file:inform.png]]
