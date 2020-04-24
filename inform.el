@@ -35,8 +35,11 @@
 
 ;;; Code:
 
+(require 'info)
 (require 'button)
 (require 'cl-lib)
+
+(add-hook 'Info-selection-hook 'Inform-make-xrefs)
 
 ;; Button types
 
