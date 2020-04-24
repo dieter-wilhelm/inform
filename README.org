@@ -1,4 +1,3 @@
-
 #+options: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
 #+options: author:t broken-links:nil c:nil creator:t
 #+options: d:(not "LOGBOOK") date:t e:t email:t f:t inline:t num:t
@@ -11,20 +10,27 @@
 #+select_tags: export
 #+exclude_tags: noexport
 
+* Introduction
+  A package for *GNU-Emacs* in the spirit of the extensible,
+  customisable, *self-documenting*, real-time display editor.
+
 * Features
-Provide links from elisp symbols (functions, variables and fonts) in
-Gnu-Emacs Info viewer to their help documentation.
+  Package inform provides links from elisp symbols (quoted functions,
+  variables and fonts) in Gnu-Emacs Info viewer to their help
+  documentations.
 
-On the left hand side is a GNU-Emacs' *info* buffer with additional
-links and right the *Help* buffer with the content of the respective
-link.
+  On the left hand side is a GNU-Emacs' *info* buffer with additional
+  links and right the *Help* buffer with the content of the respective
+  link.
 
- [[file:inform.png]]
+  [[file:inform.png]]
 
 * Installation
 
-  Download /inform.el/ and put it into  =load-path=, activate it with:
+  Download /inform.el/, put it into =load-path= and activate it with
+
   #+begin_src elisp
     (require 'inform)
   #+end_src
+
   in your init file.
