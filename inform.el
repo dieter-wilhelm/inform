@@ -8,23 +8,27 @@
 ;; Version: 1.0
 ;; URL: https://github.com/dieter-wilhelm/inform
 
-;; This program is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or
-;; (at your option) any later version.
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation, either version 3 of the
+;; License, or (at your option) any later version.
 
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
+;; This program is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+;; along with this program.  If not, see
+;; <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
 ;; This library provides links for symbols (functions, variables, ...)
 ;; within texinfo (*info*) buffers to their help documentation.
+
+;; (setq mouse-1-click-follows-link nil) is influencing the behaviour
+;; of the links, default: 450 (milli seconds)
 
 ;; The code is mostly copied from lisp/help-mode.el
 
@@ -55,9 +59,12 @@
 
 (defvar describe-symbol-backends) 	;from help-mode.el
 
-(defcustom info-make-xref t)
+(defcustom info-make-xref-flag t
+  "Non-nil means create symbol links in info buffers."
+  :type '(boolean)
+  :group 'Info)
 
-(when info-mak-xref
+(when info-make-xref-flag
   (add-hook 'Info-selection-hook 'Inform-make-xrefs))
 
 ;; Button types
@@ -164,8 +171,7 @@ disambiguated by the preceding word(s) used in
 `Inform-xref-symbol-regexp'.  Faces only get cross-referenced if
 preceded or followed by the word `face'.  Variables without
 variable documentation do not get cross-referenced, unless
-preceded by the word `variable' or `option'.
-"
+preceded by the word `variable' or `option'."
 
   ;; -TODO-
 
@@ -188,7 +194,7 @@ preceded by the word `variable' or `option'.
       ;; it at some stage (e.g. "function in `library'").
       ;;      (forward-paragraph)
       (with-silent-modifications	;from Stefan
-        (let ((stab (syntax-table))
+        (let (;(stab (syntax-table))
               (case-fold-search t)
               (inhibit-read-only t))
           (with-syntax-table emacs-lisp-mode-syntax-table
@@ -333,3 +339,4 @@ preceded by the word `variable' or `option'.
 ;; time-stamp-active: t
 ;; time-stamp-format: "%:y-%02m-%02d"
 ;; End:
+
