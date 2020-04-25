@@ -3,9 +3,9 @@
 ;; Copyright (C) 2020  H. Dieter Wilhelm
 
 ;; Author: H. Dieter Wilhelm <dieter@duenenhof-wilhelm.de>
-;; Keywords: help, docs, convenience
 ;; Maintainer: H. Dieter Wilhelm
-;; Version: 20.5.0
+;; Keywords: help, docs, convenience
+;; Version: 1.0
 ;; URL: https://github.com/dieter-wilhelm/inform
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -26,25 +26,44 @@
 ;; This library provides links for symbols (functions, variables, ...)
 ;; within texinfo (*info*) buffers to their help documentation.
 
+;; The code is mostly copied from lisp/help-mode.el
+
 ;;; Todo:
 
-;; Update documentation strings
+;; remove debugging  message
 
 ;; Back / Forward button in help buffer - back to info buffer or
 ;; remain in help mode?
 
+;; Twice clicking or RETurning removes *Help* buffer (Drew)
+
+;; Mouse-1 instead of mouse-2  (Drew)
+
+;; Different colours for different symbol type (Drew) see package
+;; helpful on Melpa
+
+;; Documentation strings are not yet adopted from help to Inform.
+
+;; Possibly useful help features are not yet explored and still
+;; commented out
+
 ;;; Code:
 
-(require 'info)
+(require 'info)				;redundant?
 (require 'button)
 (require 'cl-lib)
 
-(add-hook 'Info-selection-hook 'Inform-make-xrefs)
+(defvar describe-symbol-backends) 	;from help-mode.el
+
+(defcustom info-make-xref t)
+
+(when info-mak-xref
+  (add-hook 'Info-selection-hook 'Inform-make-xrefs))
 
 ;; Button types
 
 (define-button-type 'Inform-xref
-  'link t			   ; for Inform-next-reference-or-link
+  'link t			   ; for Info-next-reference-or-link
   'follow-link t
   'action #'Inform-button-action)
 
@@ -98,10 +117,7 @@
                 (button-get button 'Inform-function)
                 (button-get button 'Inform-args)))
 
-;; (defvar help-xref-following)
-;; (defvar Inform-xref-following nil
-;;   "Non-nil when following a help cross-reference.")
-
+;; -TODO-
 (defun Inform-do-xref (_pos function args)
   "Call the help cross-reference function FUNCTION with args ARGS.
 Things are set up properly so that the resulting `help-buffer' has
@@ -116,10 +132,10 @@ a proper [back] button."
 MATCH-NUMBER is the subexpression of interest in the last matched
 regexp.  TYPE is the type of button to use.  Any remaining arguments are
 passed to the button's help-function when it is invoked.
-See `help-make-xrefs' Don't forget ARGS." ; -TODO-
+See `Inform-make-xrefs' Don't forget ARGS." ; -TODO-
   ;; Don't mung properties we've added specially in some instances.
   (unless (button-at (match-beginning match-number))
-    (message "Creating button: %s." args)
+    ;; (message "Creating button: %s." args)
     (make-text-button (match-beginning match-number)
                       (match-end match-number)
                       'type type 'Inform-args args)))
@@ -138,23 +154,6 @@ See `help-make-xrefs' Don't forget ARGS." ; -TODO-
 The words preceding the quoted symbol can be used in doc strings to
 distinguish references to variables, functions and symbols.")
 
-(defvar describe-symbol-backends
-  `((nil ,#'fboundp ,(lambda (s _b _f) (describe-function s)))
-    (nil
-     ,(lambda (symbol)
-        (or (and (boundp symbol) (not (keywordp symbol)))
-            (get symbol 'variable-documentation)))
-     ,#'describe-variable)
-    ("face" ,#'facep ,(lambda (s _b _f) (describe-face s))))
-  "List of providers of information about symbols.
-Each element has the form (NAME TESTFUN DESCFUN) where:
-  NAME is a string naming a category of object, such as \"type\" or \"face\".
-  TESTFUN is a predicate which takes a symbol and returns non-nil if the
-    symbol is such an object.
-  DESCFUN is a function which takes three arguments (a symbol, a buffer,
-    and a frame), inserts the description of that symbol in the current buffer
-    and returns that text as well.")
-
 (defun Inform-make-xrefs (&optional buffer)
   "Parse and hyperlink documentation cross-references in the given BUFFER.
 
@@ -162,34 +161,39 @@ Find cross-reference information in a buffer and activate such cross
 references for selection with `help-follow'.  Cross-references have
 the canonical form `...'  and the type of reference may be
 disambiguated by the preceding word(s) used in
-`help-xref-symbol-regexp'.  Faces only get cross-referenced if
+`Inform-xref-symbol-regexp'.  Faces only get cross-referenced if
 preceded or followed by the word `face'.  Variables without
 variable documentation do not get cross-referenced, unless
 preceded by the word `variable' or `option'.
+"
 
-If the variable `help-xref-mule-regexp' is non-nil, find also
-cross-reference information related to multilingual environment
-\(e.g., coding-systems).  This variable is also used to disambiguate
-the type of reference as the same way as `help-xref-symbol-regexp'.
+  ;; -TODO-
 
-A special reference `back' is made to return back through a stack of
-help buffers.  Variable `help-back-label' specifies the text for
-that."
+  ;;   If the variable `help-xref-mule-regexp' is non-nil, find also
+  ;; cross-reference information related to multilingual environment
+  ;; \(e.g., coding-systems).  This variable is also used to disambiguate
+  ;; the type of reference as the same way as `help-xref-symbol-regexp'.
+
+  ;; A special reference `back' is made to return back through a stack of
+  ;; help buffers.  Variable `help-back-label' specifies the text for
+  ;; that.
+
+
   (interactive "b")
-  (message "Creating xrefs..")
+  ;; (message "Creating xrefs..")
   (with-current-buffer (or buffer (current-buffer))
     (save-excursion
       (goto-char (point-min))
       ;; Skip the header-type info, though it might be useful to parse
       ;; it at some stage (e.g. "function in `library'").
       ;;      (forward-paragraph)
-      (let ((old-modified (buffer-modified-p)))
+      (with-silent-modifications	;from Stefan
         (let ((stab (syntax-table))
               (case-fold-search t)
               (inhibit-read-only t))
-          (set-syntax-table emacs-lisp-mode-syntax-table)
+          (with-syntax-table emacs-lisp-mode-syntax-table
+	    ;; unwind-protect is out, from Stefan
           ;; The following should probably be abstracted out.
-          (unwind-protect
               (progn
                 ;; ;; Info references
                 ;; (save-excursion
@@ -294,8 +298,7 @@ that."
                 ;;               (if (fboundp sym)
                 ;;                   (help-xref-button 0 'help-function sym))))
                 ;;         (forward-line))))))
-                )
-            (set-syntax-table stab))
+              ))
           ;; Delete extraneous newlines at the end of the docstring
           ;; (goto-char (point-max))
           ;; (while (and (not (bobp)) (bolp))
@@ -315,7 +318,7 @@ that."
           ;;                            (current-buffer)))
           ;; (when (or help-xref-stack help-xref-forward-stack)
           ;;   (insert "\n")))
-        (set-buffer-modified-p old-modified))))))
+          )))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
