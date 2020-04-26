@@ -25,25 +25,33 @@
 
 ;;; Commentary:
 
-;; This library provides links for symbols (functions, variables, ...)
-;; within texinfo (*info*) buffers to their help documentation.
+;; This library provides links of symbols (functions, variables,
+;; faces) within Emacs' Info viewer to their help documentation.  This
+;; linking is done, when the symbol names in texinfo documentations
+;; (like the Emacs and Elisp manual) are `quoted', which is done
+;; customarily.  And the quoted names must be known to Emacs i.e. the
+;; definitions are loaded in its memory.
 
-;; (setq mouse-1-click-follows-link nil) is influencing the behaviour
-;; of the links, default: 450 (milli seconds) (Drew)
+;; You can follow these additional links with the usual Info
+;; keybindings.  The customisation variable
+;; `mouse-1-click-follows-link' is influencing the clicking behaviour
+;; (and the tooltips) of the links, the variable's default is 450
+;; (milli seconds) setting it to nil means only clicking with mouse-2
+;; is following the link (hint: Drew Adams).
 
-;; The code is mostly copied from lisp/help-mode.el
+;; The code uses mostly mechanisms from Emacs' lisp/help-mode.el.
 
 ;;; Todo:
 
 ;; Back / Forward button in help buffer - back to info buffer or
 ;; remain in help mode?
 
-;; Twice clicking or RETurning removes *Help* buffer (Drew)
+;; Twice clicking or RETurning removes *Help* buffer (idea: Drew Adams)
 
-;; Different colours for different symbol type (Drew) see package
-;; helpful, info+ and info-colors on Melpa
+;; Different colour for different symbol types (idea Drew Adams) see
+;; package helpful, info+ and info-colors on Melpa
 
-;; Documentation strings are not yet adopted from help to Inform.
+;; Documentation strings are not yet adopted from help to inform!
 
 ;; Possibly useful help features are not yet explored and still
 ;; commented out
@@ -57,6 +65,9 @@
 
 (defvar describe-symbol-backends) 	;from help-mode.el
 (defvar help-xref-following)		;dito
+
+;; activate inform without manually loading it.
+;;;###autoload (require 'inform)
 
 (defcustom inform-make-xref-flag t
   "Non-nil means create symbol links in info buffers."
