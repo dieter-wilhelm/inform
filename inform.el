@@ -4,6 +4,7 @@
 
 ;; Author: H. Dieter Wilhelm <dieter@duenenhof-wilhelm.de>
 ;; Maintainer: H. Dieter Wilhelm
+;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: help, docs, convenience
 ;; Version: 1.0
 ;; URL: https://github.com/dieter-wilhelm/inform
@@ -28,20 +29,16 @@
 ;; within texinfo (*info*) buffers to their help documentation.
 
 ;; (setq mouse-1-click-follows-link nil) is influencing the behaviour
-;; of the links, default: 450 (milli seconds)
+;; of the links, default: 450 (milli seconds) (Drew)
 
 ;; The code is mostly copied from lisp/help-mode.el
 
 ;;; Todo:
 
-;; remove debugging  message
-
 ;; Back / Forward button in help buffer - back to info buffer or
 ;; remain in help mode?
 
 ;; Twice clicking or RETurning removes *Help* buffer (Drew)
-
-;; Mouse-1 instead of mouse-2  (Drew)
 
 ;; Different colours for different symbol type (Drew) see package
 ;; helpful on Melpa
@@ -56,47 +53,49 @@
 (require 'info)				;redundant?
 (require 'button)
 (require 'cl-lib)
+(require 'help-mode)			;redundant?
 
 (defvar describe-symbol-backends) 	;from help-mode.el
+(defvar help-xref-following)		;dito
 
-(defcustom info-make-xref-flag t
+(defcustom inform-make-xref-flag t
   "Non-nil means create symbol links in info buffers."
   :type '(boolean)
   :group 'Info)
 
-(when info-make-xref-flag
-  (add-hook 'Info-selection-hook 'Inform-make-xrefs))
+(when inform-make-xref-flag
+  (add-hook 'Info-selection-hook 'inform-make-xrefs))
 
 ;; Button types
 
-(define-button-type 'Inform-xref
-  'link t			   ; for Info-next-reference-or-link
+(define-button-type 'inform-xref
+  'link t			   ;for Info-next-reference-or-link
   'follow-link t
-  'action #'Inform-button-action)
+  'action #'inform-button-action)
 
-(define-button-type 'Inform-function
-  :supertype 'Inform-xref
-  'Inform-function 'describe-function
-  'Inform-echo (purecopy "mouse-2, RET: describe this function"))
+(define-button-type 'inform-function
+  :supertype 'inform-xref
+  'inform-function 'describe-function
+  'inform-echo (purecopy "mouse-2, RET: describe this function"))
 
-(define-button-type 'Inform-variable
-  :supertype 'Inform-xref
-  'Inform-function 'describe-variable
-  'Inform-echo (purecopy "mouse-2, RET: describe this variable"))
+(define-button-type 'inform-variable
+  :supertype 'inform-xref
+  'inform-function 'describe-variable
+  'inform-echo (purecopy "mouse-2, RET: describe this variable"))
 
-(define-button-type 'Inform-face
-  :supertype 'Inform-xref
-  'Inform-function 'describe-face
-  'Inform-echo (purecopy "mouse-2, RET: describe this face"))
+(define-button-type 'inform-face
+  :supertype 'inform-xref
+  'inform-function 'describe-face
+  'inform-echo (purecopy "mouse-2, RET: describe this face"))
 
-(define-button-type 'Inform-symbol
-  :supertype 'Inform-xref
-  'Inform-function #'describe-symbol
-  'Inform-echo (purecopy "mouse-2, RET: describe this symbol"))
+(define-button-type 'inform-symbol
+  :supertype 'inform-xref
+  'inform-function #'describe-symbol
+  'inform-echo (purecopy "mouse-2, RET: describe this symbol"))
 
-(define-button-type 'Inform-function-def
-  :supertype 'Inform-xref
-  'Inform-function (lambda (fun &optional file type)
+(define-button-type 'inform-function-def
+  :supertype 'inform-xref
+  'inform-function (lambda (fun &optional file type)
                    (or file
                        (setq file (find-lisp-object-file-name fun type)))
                    (if (not file)
@@ -114,18 +113,18 @@
                        (if (cdr location)
                            (goto-char (cdr location))
                          (message "Unable to find location in file")))))
-  'Inform-echo (purecopy "mouse-2, RET: find function's definition"))
+  'inform-echo (purecopy "mouse-2, RET: find function's definition"))
 
 ;; Functions
 
-(defun Inform-button-action (button)
+(defun inform-button-action (button)
   "Call BUTTON's help function."
-  (Inform-do-xref nil
-                (button-get button 'Inform-function)
-                (button-get button 'Inform-args)))
+  (inform-do-xref nil
+                (button-get button 'inform-function)
+                (button-get button 'inform-args)))
 
 ;; -TODO-
-(defun Inform-do-xref (_pos function args)
+(defun inform-do-xref (_pos function args)
   "Call the help cross-reference function FUNCTION with args ARGS.
 Things are set up properly so that the resulting `help-buffer' has
 a proper [back] button."
@@ -134,20 +133,20 @@ a proper [back] button."
     (apply function (if (eq function 'info)
                         (append args (list (generate-new-buffer-name "*info*"))) args))))
 
-(defun Inform-xref-button (match-number type &rest args)
+(defun inform-xref-button (match-number type &rest args)
   "Make a hyperlink for cross-reference text previously matched.
 MATCH-NUMBER is the subexpression of interest in the last matched
 regexp.  TYPE is the type of button to use.  Any remaining arguments are
 passed to the button's help-function when it is invoked.
-See `Inform-make-xrefs' Don't forget ARGS." ; -TODO-
+See `inform-make-xrefs' Don't forget ARGS." ; -TODO-
   ;; Don't mung properties we've added specially in some instances.
   (unless (button-at (match-beginning match-number))
     ;; (message "Creating button: %s." args)
     (make-text-button (match-beginning match-number)
                       (match-end match-number)
-                      'type type 'Inform-args args)))
+                      'type type 'inform-args args)))
 
-(defconst Inform-xref-symbol-regexp
+(defconst inform-xref-symbol-regexp
   (purecopy (concat "\\(\\<\\(\\(variable\\|option\\)\\|"  ; Link to var
                     "\\(function\\|command\\|call\\)\\|"   ; Link to function
                     "\\(face\\)\\|"			   ; Link to face
@@ -161,14 +160,14 @@ See `Inform-make-xrefs' Don't forget ARGS." ; -TODO-
 The words preceding the quoted symbol can be used in doc strings to
 distinguish references to variables, functions and symbols.")
 
-(defun Inform-make-xrefs (&optional buffer)
+(defun inform-make-xrefs (&optional buffer)
   "Parse and hyperlink documentation cross-references in the given BUFFER.
 
 Find cross-reference information in a buffer and activate such cross
 references for selection with `help-follow'.  Cross-references have
 the canonical form `...'  and the type of reference may be
 disambiguated by the preceding word(s) used in
-`Inform-xref-symbol-regexp'.  Faces only get cross-referenced if
+`inform-xref-symbol-regexp'.  Faces only get cross-referenced if
 preceded or followed by the word `face'.  Variables without
 variable documentation do not get cross-referenced, unless
 preceded by the word `variable' or `option'."
@@ -243,7 +242,7 @@ preceded by the word `variable' or `option'."
 
                 ;; Quoted symbols
                 (save-excursion
-                  (while (re-search-forward Inform-xref-symbol-regexp nil t)
+                  (while (re-search-forward inform-xref-symbol-regexp nil t)
                     (let* ((data (match-string 8))
                            (sym (intern-soft data)))
                       (if sym
@@ -252,20 +251,19 @@ preceded by the word `variable' or `option'."
                             (and (or (boundp sym) ; `variable' doesn't ensure
                                         ; it's actually bound
                                      (get sym 'variable-documentation))
-                                 (Inform-xref-button 8 'Inform-variable sym)))
+                                 (inform-xref-button 8 'inform-variable sym)))
                            ((match-string 4) ; `function' &c
                             (and (fboundp sym) ; similarly
-                                 (Inform-xref-button 8 'Inform-function sym)))
+                                 (inform-xref-button 8 'inform-function sym)))
                            ((match-string 5) ; `face'
                             (and (facep sym)
-                                 (Inform-xref-button 8 'Inform-face sym)))
+                                 (inform-xref-button 8 'inform-face sym)))
                            ((match-string 6)) ; nothing for `symbol'
                            ((match-string 7)
-                            (Inform-xref-button 8 'Inform-function-def sym))
+                            (inform-xref-button 8 'inform-function-def sym))
                            ((cl-some (lambda (x) (funcall (nth 1 x) sym))
                                      describe-symbol-backends)
-                            (Inform-xref-button 8 'Inform-symbol sym))
-                           )))))
+                            (inform-xref-button 8 'inform-symbol sym)))))))
                 ;; An obvious case of a key substitution:
                 ;; (save-excursion
                 ;;   (while (re-search-forward
