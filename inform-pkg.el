@@ -1,4 +1,5 @@
 (define-package "inform" "1.0" "Symbol links in Info buffers to their help documentation."
+  '((emacs "25.1"))
   :keywords
   '("help" "docs" "convenience")
   :authors

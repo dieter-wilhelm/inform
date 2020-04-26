@@ -41,7 +41,7 @@
 ;; Twice clicking or RETurning removes *Help* buffer (Drew)
 
 ;; Different colours for different symbol type (Drew) see package
-;; helpful on Melpa
+;; helpful, info+ and info-colors on Melpa
 
 ;; Documentation strings are not yet adopted from help to Inform.
 
