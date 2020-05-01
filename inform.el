@@ -28,9 +28,11 @@
 ;; This library provides links of symbols (functions, variables,
 ;; faces) within Emacs' Info viewer to their help documentation.  This
 ;; linking is done, when the symbol names in texinfo documentations
-;; (like the Emacs and Elisp manual) are `quoted', which is done
-;; customarily.  And the quoted names must be known to Emacs i.e. the
-;; definitions are loaded in its memory.
+;; (like the Emacs- and Elisp manual) are `quoted-symbols' or
+;; functions which are prefixed by M-x, for example "... use M-x
+;; function-name ..." or "... use `M-x function-name' ...".  The
+;; symbol names must be known to Emacs, i.e. their names are stored in
+;; the variable `obarray'.
 
 ;; You can follow these additional links with the usual Info
 ;; keybindings.  The customisation variable
@@ -39,9 +41,11 @@
 ;; (milli seconds) setting it to nil means only clicking with mouse-2
 ;; is following the link (hint: Drew Adams).
 
-;; The code uses mostly mechanisms from Emacs' lisp/help-mode.el.
+;; The code uses mostly mechanisms from Emacs' lisp/help-mode.el file.
 
 ;;; Todo:
+
+;; `M-x\nfunction-name' is not buttonised in an *info* buffer
 
 ;; Back / Forward button in help buffer - back to info buffer or
 ;; remain in help mode?
@@ -55,6 +59,9 @@
 
 ;; Possibly useful help features are not yet explored and still
 ;; commented out
+
+;; How to shorten URLs shortening?  But how to handle then the
+;; indentation?
 
 ;;; Code:
 
@@ -196,7 +203,6 @@ preceded by the word `variable' or `option'."
 
 
   (interactive "b")
-  ;; (message "Creating xrefs..")
   (with-current-buffer (or buffer (current-buffer))
     (save-excursion
       (goto-char (point-min))
@@ -221,11 +227,13 @@ preceded by the word `variable' or `option'."
                 ;;      (setq data ;; possible newlines if para filled
                 ;;            (replace-regexp-in-string "[ \t\n]+" " " data t t)))
                 ;;       (help-xref-button 2 'help-info data))))
+
                 ;; ;; URLs
                 ;; (save-excursion
                 ;;   (while (re-search-forward help-xref-url-regexp nil t)
                 ;;     (let ((data (match-string 1)))
                 ;;       (help-xref-button 1 'help-url data))))
+
                 ;; ;; Mule related keywords.  Do this before trying
                 ;; ;; `help-xref-symbol-regexp' because some of Mule
                 ;; ;; keywords have variable or function definitions.
@@ -275,17 +283,21 @@ preceded by the word `variable' or `option'."
                            ((cl-some (lambda (x) (funcall (nth 1 x) sym))
                                      describe-symbol-backends)
                             (inform-xref-button 8 'inform-symbol sym)))))))
-                ;; An obvious case of a key substitution:
-                ;; (save-excursion
-                ;;   (while (re-search-forward
-                ;;           ;; Assume command name is only word and symbol
-                ;;           ;; characters to get things like `use M-x foo->bar'.
-                ;;           ;; Command required to end with word constituent
-                ;;           ;; to avoid `.' at end of a sentence.
-                ;;           "\\<M-x\\s-+\\(\\sw\\(\\sw\\|\\s_\\)*\\sw\\)" nil t)
-                ;;     (let ((sym (intern-soft (match-string 1))))
-                ;;       (if (fboundp sym)
-                ;;           (help-xref-button 1 'help-function sym)))))
+
+                ;; M-x prefixed functions
+                (save-excursion
+                  (while (re-search-forward
+                          ;; Assume command name is only word and symbol
+                          ;; characters to get things like `use M-x foo->bar'.
+                          ;; Command required to end with word constituent
+                          ;; to avoid `.' at end of a sentence.
+			  ;; "\\<M-x\\s-+\\(\\sw\\(\\sw\\|\\s_\\)*\\sw\\)" nil t)
+                          "['`‘]?M-x\\s-+\\(\\sw\\(\\sw\\|\\s_\\)*\\sw\\)['’]?" nil t)
+                    (let ((sym (intern-soft (match-string 1))))
+		      (message "found %s" sym)
+                      (if (fboundp sym)
+                          (inform-xref-button 1 'inform-function sym)))))
+
                 ;; ;; Look for commands in whole keymap substitutions:
                 ;; (save-excursion
                 ;;   ;; Make sure to find the first keymap.
