@@ -15,9 +15,9 @@
   customisable, *self-documenting*, real-time display editor.
 
 * Features
-  Package inform provides links from elisp symbols (quoted functions,
-  variables and fonts) in Gnu-Emacs Info viewer to their help
-  documentations.
+  Package `inform' provides links from elisp symbols (quoted
+  functions, variables and fonts) in Gnu-Emacs Info viewer to their
+  help documentations.
 
   On the left hand side is a GNU-Emacs' *info* buffer with additional
   links and right the *Help* buffer with the content of the respective
@@ -26,8 +26,31 @@
   [[file:inform.png]]
 
 * Installation
+** Melpa
+   Package `inform' is available on the GNU-Emacs packages archive [[https://melpa.org/][Melpa]].
 
-  Download /inform.el/, put it into =load-path= and activate it with
+   [[https://melpa.org/#/apdl-mode][file:https://melpa.org/packages/inform-badge.svg]]
+   [[https://stable.melpa.org/#/apdl-mode][file:https://stable.melpa.org/packages/inform-badge.svg]]
+
+   Please add
+   #+begin_src elisp
+   (add-to-list 'package-archives
+	     '("melpa" . "https://melpa.org/packages/") t)
+   #+end_src
+
+   to your initialisation file.  Then type: `M-x list-packages', find
+   `inform', mark it with `i' for installation and install it with
+   `x'.
+
+   If you prefer the stable package archive instead of development
+   versions exchange above package source with
+   #+begin_src elisp
+      (add-to-list 'package-archives
+      '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+   #+end_src
+
+** Manual installation
+   Download /inform.el/, put it into =load-path= and activate it with
 
   #+begin_src elisp
     (require 'inform)
