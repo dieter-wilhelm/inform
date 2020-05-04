@@ -17,7 +17,7 @@
 * Features
   Package `inform' provides links from elisp symbols (quoted
   functions, variables and fonts) in Gnu-Emacs Info viewer to their
-  help documentations.
+  help documentation.
 
   On the left hand side is a GNU-Emacs' *info* buffer with additional
   links and right the *Help* buffer with the content of the respective

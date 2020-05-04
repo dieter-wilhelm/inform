@@ -45,22 +45,32 @@
 
 ;;; Todo:
 
-;; `M-x\nfunction-name' is not buttonised in an *info* buffer
+;; Elisp manual uses -- Special Form:
+;;                   -- User Option:
+;;                   -- Variable: variable-name
+;;                   -- Command:
+;;                   -- Function: function-name function
+;;                   -- Macro:
+;;       Examples:
+;;       (symbol-function 'car) ...
+
+;; Generalise linking to "customization buffers" for the "easy
+;; customization" info documentation
+;;  see also the customisation section in the elisp manual
 
 ;; Back / Forward button in help buffer - back to info buffer or
 ;; remain in help mode?
 
 ;; Twice clicking or RETurning removes *Help* buffer (idea: Drew Adams)
 
-;; Different colour for different symbol types (idea Drew Adams) see
+;; Different colour for different symbol types (idea: Drew Adams) see
 ;; package helpful, info+ and info-colors on Melpa
 
-;; Documentation strings are not yet adopted from help to inform!
+;; Documentation strings are often still from help-mode.el!
 
-;; Possibly useful help features are not yet explored and still
-;; commented out
+;; Not all features from help-mode.el are yet explored
 
-;; How to shorten URLs shortening?  But how to handle then the
+;; Shortening texinfo URLs?  But how to handle the changed
 ;; indentation?
 
 ;;; Code:
@@ -235,7 +245,8 @@ preceded by the word `variable' or `option'."
 		      ;; Command required to end with word constituent
 		      ;; to avoid `.' at end of a sentence.
 		      ;; "\\<M-x\\s-+\\(\\sw\\(\\sw\\|\\s_\\)*\\sw\\)" nil t)
-		      "['`‘]?M-x\\s-+\\(\\sw\\(\\sw\\|\\s_\\)*\\sw\\)['’]?" nil t)
+		      ;; include M-x and quotes
+		      "['`‘]?M-x\\s-*\n?\\(\\sw\\(\\sw\\|\\s_\\)*\\sw\\)['’]?" nil t)
 		(let ((sym (intern-soft (match-string 1))))
 		  (message "found %s" sym)
 		  (if (fboundp sym)
