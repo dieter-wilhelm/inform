@@ -67,7 +67,7 @@
 ;; Update the documentation, some strings are still from from
 ;; help-mode.el!
 
-;;; Wishes and ideas:
+;;; Ideas:
 
 ;; Twice clicking or RETurning removes *Help* buffer (idea: Drew
 ;; Adams)
@@ -76,12 +76,12 @@
 ;; package helpful and info+ / info-colors on Melpa and see
 ;; font-lock.el for common faces.
 
-;; - Would it be be good to overtake info-colors?
-
 ;; - Do we need to indicate an already visited Help link with a
 ;; - different color?
 
-;; - Do we need to distingush link fonts?
+;; - Would it be be good to overtake all info-colors colors?
+
+;; - Do we need to distinguish link fonts? No difficult to read!
 
 ;; Back / Forward button in help buffer - back to info buffer or
 ;; remain in help mode?
