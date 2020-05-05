@@ -7,7 +7,7 @@
 ;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: help, docs, convenience
 ;; Created: 2020-04
-;; Version: 1.1
+;; Version: 1.2
 ;; URL: https://github.com/dieter-wilhelm/inform
 
 ;; This program is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@
 
 ;; You can follow these additional links with the usual Info
 ;; keybindings.  The customisation variable
-;; `mouse-1-click-follows-link' is influencing the clicking behaviour
+;; `mouse-1-click-follows-link' is influencing the clicking behavior
 ;; (and the tooltips) of the links, the variable's default is 450
 ;; (milli seconds) setting it to nil means only clicking with mouse-2
 ;; is following the link (hint: Drew Adams).
@@ -46,25 +46,42 @@
 
 ;;; Change Log:
 
-;;  1.2: linking manual descriptions to symbols' help, like the
-;;  following function example: -- Function: eval form &optional
+;; 1.2:
+
+;; Link Elisp descriptions of symbols to their help documentation,
+;; like the following function example: -- Function: eval form
+
+;; Distinguish color of texinfo links (`link' type) and Help links
+;; (`font-lock-function-name-face')
 
 ;;; TODO:
 
+;; Better document linking requirements/specification
+
 ;; Generalise linking to "customization buffers" for the "easy
-;; customization" info documentation
-;; see also the customisation section in the elisp manual
+;; customization" info documentation see also the customization
+;; section in the elisp manual
 
-;; Different colour for different symbol types (idea: Drew Adams) see
-;; package helpful, info+ and info-colors on Melpa
+;; - distinguish the Customization-links from Help- and Info-links
 
-;; - It would be really good to distinquish between link to Info
-;; - documentation and Help documentation links!  Colour and/or font?
-
-;; Twice clicking or RETurning removes *Help* buffer (idea: Drew Adams)
-
-;; Update documentation, some strings are still from from
+;; Update the documentation, some strings are still from from
 ;; help-mode.el!
+
+;;; Wishes and ideas:
+
+;; Twice clicking or RETurning removes *Help* buffer (idea: Drew
+;; Adams)
+
+;; Different colors for different symbol types (idea: Drew Adams) see
+;; package helpful and info+ / info-colors on Melpa and see
+;; font-lock.el for common faces.
+
+;; - Would it be be good to overtake info-colors?
+
+;; - Do we need to indicate an already visited Help link with a
+;; - different color?
+
+;; - Do we need to distingush link fonts?
 
 ;; Back / Forward button in help buffer - back to info buffer or
 ;; remain in help mode?
@@ -98,11 +115,17 @@
 (when inform-make-xref-flag
   (add-hook 'Info-selection-hook 'inform-make-xrefs))
 
+(defface inform-color
+  '((t (:inherit font-lock-function-name-face)))
+  "Face for names of `symbols' reference items in `info' nodes."
+  :group 'info-colors)
+
 ;; Button types
 
 (define-button-type 'inform-xref
   'link t			   ;for Info-next-reference-or-link
   'follow-link t
+  'face 'inform-color
   'action #'inform-button-action)
 
 (define-button-type 'inform-function
@@ -277,7 +300,7 @@ preceded by the word `variable' or `option'."
 		      ;; include M-x and quotes
 		      "['`‘]?M-x\\s-*\n?\\(\\sw\\(\\sw\\|\\s_\\)*\\sw\\)['’]?" nil t)
 		(let ((sym (intern-soft (match-string 1))))
-		  (message "found %s" sym)
+		  ;; (message "found %s" sym)
 		  (if (fboundp sym)
 		      (inform-xref-button 1 'inform-function sym)))))))))))
 
