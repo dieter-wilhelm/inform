@@ -46,23 +46,22 @@
 
 ;;; Change Log:
 
-;;; TODO:
+;;  1.2: linking manual descriptions to symbols' help, like the
+;;  following function example: -- Function: eval form &optional
 
-;; Elisp manual      -- Special Form:
-;;                   -- User Option:
-;;                   -- Variable: variable-name
-;;                   -- Command:
-;;                   -- Function: function-name function
-;;                   -- Macro:
+;;; TODO:
 
 ;; Generalise linking to "customization buffers" for the "easy
 ;; customization" info documentation
 ;; see also the customisation section in the elisp manual
 
-;; Twice clicking or RETurning removes *Help* buffer (idea: Drew Adams)
-
 ;; Different colour for different symbol types (idea: Drew Adams) see
 ;; package helpful, info+ and info-colors on Melpa
+
+;; - It would be really good to distinquish between link to Info
+;; - documentation and Help documentation links!  Colour and/or font?
+
+;; Twice clicking or RETurning removes *Help* buffer (idea: Drew Adams)
 
 ;; Update documentation, some strings are still from from
 ;; help-mode.el!
@@ -70,7 +69,7 @@
 ;; Back / Forward button in help buffer - back to info buffer or
 ;; remain in help mode?
 
-;; Not all features from help-mode.el are yet explored
+;; Standard symbol properties? (info "(elisp) Standard Properties")
 
 ;;  Elisp manual examples:
 ;;       (symbol-name 'car) ... ?
@@ -241,6 +240,31 @@ preceded by the word `variable' or `option'."
 		       ((cl-some (lambda (x) (funcall (nth 1 x) sym))
 				 describe-symbol-backends)
 			(inform-xref-button 8 'inform-symbol sym)))))))
+
+	    ;; (info "(elisp) Eval")
+	    ;; Elisp manual      -- Special Form:
+	    ;;                   -- Command:
+	    ;;                   -- Function: function-name function
+	    ;;                   -- Macro:
+	    (save-excursion
+	      (while (re-search-forward
+		      "-- \\(Special Form:\\|Command:\\|Function:\\|Macro:\\) "
+		      nil t)
+		(looking-at "\\(\\sw\\|\\s_\\)+")
+		(let ((sym (intern-soft (match-string 0))))
+		  (if (fboundp sym)
+		      (inform-xref-button 0 'inform-function sym)))))
+
+	    ;;              -- User Option:
+	    ;;              -- Variable: variable-name
+	    (save-excursion
+	      (while (re-search-forward
+		      "-- \\(User Option:\\|Variable:\\) "
+		      nil t)
+		(looking-at "\\(\\sw\\|\\s_\\)+")
+		(let ((sym (intern-soft (match-string 0))))
+		  (if (boundp sym)
+		      (inform-xref-button 0 'inform-variable sym)))))
 
 	    ;; M-x prefixed functions
 	    (save-excursion
