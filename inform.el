@@ -6,7 +6,8 @@
 ;; Maintainer: H. Dieter Wilhelm
 ;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: help, docs, convenience
-;; Version: 1.0
+;; Created: 2020-04
+;; Version: 1.1
 ;; URL: https://github.com/dieter-wilhelm/inform
 
 ;; This program is free software; you can redistribute it and/or
@@ -43,34 +44,38 @@
 
 ;; The code uses mostly mechanisms from Emacs' lisp/help-mode.el file.
 
-;;; Todo:
+;;; Change Log:
 
-;; Elisp manual uses -- Special Form:
+;;; TODO:
+
+;; Elisp manual      -- Special Form:
 ;;                   -- User Option:
 ;;                   -- Variable: variable-name
 ;;                   -- Command:
 ;;                   -- Function: function-name function
 ;;                   -- Macro:
-;;       Examples:
-;;       (symbol-function 'car) ...
 
 ;; Generalise linking to "customization buffers" for the "easy
 ;; customization" info documentation
-;;  see also the customisation section in the elisp manual
-
-;; Back / Forward button in help buffer - back to info buffer or
-;; remain in help mode?
+;; see also the customisation section in the elisp manual
 
 ;; Twice clicking or RETurning removes *Help* buffer (idea: Drew Adams)
 
 ;; Different colour for different symbol types (idea: Drew Adams) see
 ;; package helpful, info+ and info-colors on Melpa
 
-;; Documentation strings are often still from help-mode.el!
+;; Update documentation, some strings are still from from
+;; help-mode.el!
+
+;; Back / Forward button in help buffer - back to info buffer or
+;; remain in help mode?
 
 ;; Not all features from help-mode.el are yet explored
 
-;; Shortening texinfo URLs?  But how to handle the changed
+;;  Elisp manual examples:
+;;       (symbol-name 'car) ... ?
+
+;; Shortening the verbose texinfo URLs?  But how to handle the changed
 ;; indentation?
 
 ;;; Code:
