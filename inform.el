@@ -29,13 +29,31 @@
 ;; This library provides links of symbols (functions, variables,
 ;; faces) within Emacs' Info viewer to their help documentation.  This
 ;; linking is done, when the symbol names in texinfo documentations
-;; (like the Emacs- and Elisp manual) are `quoted-symbols' or
-;; functions which are prefixed by M-x, for example "... use M-x
-;; function-name ..." or "... use `M-x function-name' ...".  The
-;; symbol names must be known to Emacs, i.e. their names are stored in
-;; the variable `obarray'.
+;; (like the Emacs- and Elisp manual) are
 
-;; You can follow these additional links with the usual Info
+;; 1. Quoted symbol names like `quoted-symbol' or:
+
+;; 2. Function names are prefixed by M-x, for example "M-x
+;; function-name" or are quoted and prefixed like "`M-x
+;; function-name'".
+
+;; 3. Function names are behind the following forms like in the Elisp
+;; manual:
+
+;;   -- Special Form:
+;;   -- Command:
+;;   -- Function:
+;;   -- Macro:
+
+;; 4. Variables names are behind the following text:
+
+;;   -- User Option:
+;;   -- Variable:
+
+;;  In any case all symbol names must be known to Emacs, i.e. their
+;; names are found in the variable `obarray'.
+
+;; You can follow the additional links with the usual Info
 ;; keybindings.  The customisation variable
 ;; `mouse-1-click-follows-link' is influencing the clicking behavior
 ;; (and the tooltips) of the links, the variable's default is 450
@@ -67,6 +85,9 @@
 ;; Update the documentation, some strings are still from from
 ;; help-mode.el!
 
+;; Under Win10 `font-lock-function-name-face' is too near the color of
+;; texinfo links!
+
 ;;; Ideas:
 
 ;; Twice clicking or RETurning removes *Help* buffer (idea: Drew
@@ -82,6 +103,9 @@
 ;; - Would it be be good to overtake all info-colors colors?
 
 ;; - Do we need to distinguish link fonts? No difficult to read!
+
+;; Restrict this kind of linking only for GNU-Emacs related
+;; documentation to avoid false positives.
 
 ;; Back / Forward button in help buffer - back to info buffer or
 ;; remain in help mode?
