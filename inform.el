@@ -7,7 +7,7 @@
 ;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: help, docs, convenience
 ;; Created: 2020-04
-;; Version: 1.2
+;; Version: 1.3
 ;; URL: https://github.com/dieter-wilhelm/inform
 
 ;; This program is free software; you can redistribute it and/or
@@ -33,21 +33,20 @@
 
 ;; 1. Quoted symbol names like `quoted-symbol' or:
 
-;; 2. Function names are prefixed by M-x, for example "M-x
-;; function-name" or are quoted and prefixed like "`M-x
-;; function-name'".
+;; 2. Function names are prefixed by M-x, for example M-x
+;; function-name or are quoted and prefixed like `M-x function-name'.
 
-;; 3. Function names are behind the following forms like in the Elisp
-;; manual:
+;; 3. Function names appearing behind the following forms, which
+;; occur, for example, in the Elisp manual:
 
-;;   -- Special Form:
+;;   -- Special Form: function-name
 ;;   -- Command:
 ;;   -- Function:
 ;;   -- Macro:
 
-;; 4. Variables names are behind the following text:
+;; 4. And variables names behind the following text:
 
-;;   -- User Option:
+;;   -- User Option: variable-name
 ;;   -- Variable:
 
 ;;  In any case all symbol names must be known to Emacs, i.e. their
@@ -60,9 +59,14 @@
 ;; (milli seconds) setting it to nil means only clicking with mouse-2
 ;; is following the link (hint: Drew Adams).
 
+;; The link color of symbols - referencing their builtin documentation
+;; - is distinct from links which are referencing further Info
+;;  documentation.
+
 ;; The code uses mostly mechanisms from Emacs' lisp/help-mode.el file.
 
 ;;; Change Log:
+;; 1.3:
 
 ;; 1.2:
 
@@ -85,8 +89,9 @@
 ;; Update the documentation, some strings are still from from
 ;; help-mode.el!
 
-;; Under Win10 `font-lock-function-name-face' is too near the color of
-;; texinfo links!
+;; For the default Emacs `font-lock-function-name-face' hardly to
+;; distinguish from the color of texinfo links!  (It works only for
+;; the reverted color)
 
 ;;; Ideas:
 
@@ -98,11 +103,12 @@
 ;; font-lock.el for common faces.
 
 ;; - Do we need to indicate an already visited Help link with a
-;; - different color?
+;;   different color?
 
-;; - Would it be be good to overtake all info-colors colors?
+;; - Would it be be good to overtake all colors of package
+;;   "info-colors"?
 
-;; - Do we need to distinguish link fonts? No difficult to read!
+;; - Do we need to distinguish the link FONTS? No, difficult to read!
 
 ;; Restrict this kind of linking only for GNU-Emacs related
 ;; documentation to avoid false positives.
@@ -128,7 +134,7 @@
 (defvar describe-symbol-backends) 	;from help-mode.el
 (defvar help-xref-following)		;dito
 
-;; activate inform without manually loading it.
+;; activate inform without manually loading it. ;-)
 ;;;###autoload (require 'inform)
 
 (defcustom inform-make-xref-flag t
@@ -140,7 +146,13 @@
   (add-hook 'Info-selection-hook 'inform-make-xrefs))
 
 (defface inform-color
-  '((t (:inherit font-lock-function-name-face)))
+  '((t (:inherit ;(if (or (string= system-type "windows-nt")
+		;	 (string= system-type "cygwin"))
+	font-lock-doc-face
+		;   font-lock-preprocessor-face ; rather pale (default)
+		;   font-lock-builtin-face ; rather pale (default)
+		;   font-lock-function-name-face)
+		     )))
   "Face for names of `symbols' reference items in `info' nodes."
   :group 'info-colors)
 
