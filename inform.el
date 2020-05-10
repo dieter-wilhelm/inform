@@ -63,10 +63,18 @@
 ;; - is distinct from links which are referencing further Info
 ;;  documentation.
 
+;; Inform is checking if the Info documents are relevant Elisp and
+;; Emacs related files to avoid false positives.  Please see the
+;; customization variable `inform-none-emacs-or-elisp-documents'.
+
 ;; The code uses mostly mechanisms from Emacs' lisp/help-mode.el file.
 
 ;;; Change Log:
+
 ;; 1.3:
+
+;; Inform is checking if the Info documents are relevant Elisp and
+;; Emacs related files to avoid false positives.
 
 ;; 1.2:
 
@@ -78,22 +86,26 @@
 
 ;;; TODO:
 
-;; Better document linking requirements/specification
+;; Currently inconsistent link colors to help buffers: In *info*
+;; different as in *Help* buffers!
+
+;; Check the application `inform-xref-symbol-regexp' for additional
+;; symbol prefixes without quoting of symbol-names
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Does the following belong to customize.el?
 
 ;; Generalise linking to "customization buffers" for the "easy
 ;; customization" info documentation see also the customization
 ;; section in the elisp manual
 
 ;; - distinguish the Customization-links from Help- and Info-links
-
-;; Update the documentation, some strings are still from from
-;; help-mode.el!
-
-;; For the default Emacs `font-lock-function-name-face' hardly to
-;; distinguish from the color of texinfo links!  (It works only for
-;; the reverted color)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; Ideas:
+
+;; Link the help buffers back to higher level info manual subjects,
+;; similar to help-fns+.el from Drew Adams.
 
 ;; Twice clicking or RETurning removes *Help* buffer (idea: Drew
 ;; Adams)
@@ -110,13 +122,12 @@
 
 ;; - Do we need to distinguish the link FONTS? No, difficult to read!
 
-;; Restrict this kind of linking only for GNU-Emacs related
-;; documentation to avoid false positives.
-
 ;; Back / Forward button in help buffer - back to info buffer or
 ;; remain in help mode?
 
-;; Standard symbol properties? (info "(elisp) Standard Properties")
+;; Linking of standard symbol properties?
+
+;; - (info "(elisp) Standard Properties")
 
 ;;  Elisp manual examples:
 ;;       (symbol-name 'car) ... ?
@@ -131,29 +142,87 @@
 (require 'cl-lib)
 (require 'help-mode)			;redundant?
 
-(defvar describe-symbol-backends) 	;from help-mode.el
-(defvar help-xref-following)		;dito
-
 ;; activate inform without manually loading it. ;-)
 ;;;###autoload (require 'inform)
 
+;; this is overwriting lisp/info-xref.el's definition! which sorts it
+;; in 'docs!
+(defgroup info-xref nil
+  "Customisation 'info-xref' subgroup of info.
+Check external cross-references in Info documents and provide
+hyperlinks from symbols to their help documentation."
+  :group 'info)
+
 (defcustom inform-make-xref-flag t
   "Non-nil means create symbol links in info buffers."
-  :type '(boolean)
-  :group 'Info)
+  :type '(choice (const :tag "Create links" t)
+		 (const :tag "Do not link" nil))
+  :group 'info-xref)
 
+(require 'cl-seq)
+;; Info-director-list must be initialised
+(info-initialize)
+(defvar inform-emacs-info-dir-content
+  (mapcar 'file-name-nondirectory ;'file-name-sans-extension
+	  (directory-files
+	   (car
+	    ;; search for the main Emacs' info/ directory
+	    (cl-member "[^.]emacs" Info-directory-list :test 'string-match-p))
+	   ;; don't list "." and ".."
+	   t  "[^.]$"))
+  "List of file names in Emacs' own info/ directory.")
+
+;; Turn into regexp list necessary? Stefan
+;; Switch to alist with explanation of file name?
+(defcustom inform-none-emacs-or-elisp-documents
+  '("aarm2012" ; Stefan: Ada manual, Elpa archive
+    "arm2012"  ; Stefan: Ada manual
+    "sicp"   ; T.V: Structure and Interpretation of Computer Programs,
+					; Melpa archive
+    )
+  "List of all none GNU-Emacs or Elisp documentation.
+Or other documents not to be checked for linking to their help
+documentation.  The list must contains only the base name of the
+files (without their file name extension \".info\")."
+  :type '(repeat string)
+  :group 'info-xref)
+
+(defun inform-check-docu-p ()
+  "Check if the current info file is relevant to Emacs.
+That means `Info-current-file' is either found in Emacs' info/
+directory or in `package-user-dir' and is not included in the
+`infom-none-emacs-or-elisp-documents' list."
+  (let* ((ifile Info-current-file)
+	 (ifi (when ifile
+		(file-name-sans-extension
+		 (file-name-nondirectory ifile))))
+	 (pdir (when (boundp 'package-user-dir)
+		 (expand-file-name
+		  package-user-dir)))
+	 (ifiles inform-emacs-info-dir-content)
+	 (ndocu inform-none-emacs-or-elisp-documents))
+    (and ifile
+	 (or (assoc-string (concat ifi ".info") ifiles)
+	     ;; info files might be archived!
+	     (assoc-string (concat ifi ".info.gz") ifiles)
+	     (when pdir (string-match pdir ifile)))
+	 (not (assoc-string ifi ndocu)))))
+
+(defvar describe-symbol-backends) 	;from help-mode.el
+(defvar help-xref-following)		;dito
+
+;; this toggles the complete linking process
 (when inform-make-xref-flag
   (add-hook 'Info-selection-hook 'inform-make-xrefs))
 
 (defface inform-color
-  '((t (:inherit ;(if (or (string= system-type "windows-nt")
-		;	 (string= system-type "cygwin"))
-	font-lock-doc-face
-		;   font-lock-preprocessor-face ; rather pale (default)
-		;   font-lock-builtin-face ; rather pale (default)
-		;   font-lock-function-name-face)
-		     )))
-  "Face for names of `symbols' reference items in `info' nodes."
+  '((t (:inherit font-lock-doc-face
+		 ;; font-lock-preprocessor-face ; similar to link face (default)
+		 ;; font-lock-builtin-face ; similar (default Emacs)
+		 ;; font-lock-function-name-face ; similar (default)
+		 ;; Info-xref-face
+		 )))
+  "Face for the `symbol' reference items in `info' nodes."
   :group 'info-colors)
 
 ;; Button types
@@ -229,7 +298,7 @@ a proper [back] button."
   "Make a hyperlink for cross-reference text previously matched.
 MATCH-NUMBER is the subexpression of interest in the last matched
 regexp.  TYPE is the type of button to use.  Any remaining arguments are
-passed to the button's help-function when it is invoked.
+passed to the button's inform-function when it is invoked.
 See `inform-make-xrefs' Don't forget ARGS." ; -TODO-
   ;; Don't mung properties we've added specially in some instances.
   (unless (button-at (match-beginning match-number))
@@ -259,46 +328,66 @@ Find cross-reference information in a buffer and activate such cross
 references for selection with `help-follow'.  Cross-references have
 the canonical form `...'  and the type of reference may be
 disambiguated by the preceding word(s) used in
-`inform-xref-symbol-regexp'.  Faces only get cross-referenced if
-preceded or followed by the word `face'.  Variables without
-variable documentation do not get cross-referenced, unless
-preceded by the word `variable' or `option'."
+`inform-xref-symbol-regexp'.
+
+Function names are also prefixed by \"M-x\", for example \"M-x
+function-name\" or are quoted and prefixed like `M-x
+function-name'.
+
+Also Function names appearing behind the following forms, which
+occur, for example, in the Elisp manual:
+
+ -- Special Form: function-name
+ -- Command:
+ -- Function:
+ -- Macro:
+
+And variables names behind the following text:
+
+ -- User Option: variable-name
+ -- Variable:
+
+Faces only get cross-referenced if preceded or followed by the
+word `face'.  Variables without variable documentation do not get
+cross-referenced, unless preceded by the word `variable' or
+`option'."
   (interactive "b")
-  (with-current-buffer (or buffer (current-buffer))
-    (save-excursion
-      (goto-char (point-min))
-      ;; Skip the header-type info, though it might be useful to parse
-      ;; it at some stage (e.g. "function in `library'").
-      ;;      (forward-paragraph)
-      (with-silent-modifications	;from Stefan
-        (let (;(stab (syntax-table))
-              (case-fold-search t)
-              (inhibit-read-only t))
-          (with-syntax-table emacs-lisp-mode-syntax-table
-	    ;; Quoted symbols
-	    (save-excursion
-	      (while (re-search-forward inform-xref-symbol-regexp nil t)
-		(let* ((data (match-string 8))
-		       (sym (intern-soft data)))
-		  (if sym
-		      (cond
-		       ((match-string 3) ; `variable' &c
-			(and (or (boundp sym) ; `variable' doesn't ensure
+  (when (inform-check-docu-p)
+    (with-current-buffer (or buffer (current-buffer))
+      (save-excursion
+	(goto-char (point-min))
+	;; Skip the header-type info, though it might be useful to parse
+	;; it at some stage (e.g. "function in `library'").
+	;;      (forward-paragraph)
+	(with-silent-modifications	;from Stefan
+	  (let (;(stab (syntax-table))
+		(case-fold-search t)
+		(inhibit-read-only t))
+	    (with-syntax-table emacs-lisp-mode-syntax-table
+	      ;; Quoted symbols
+	      (save-excursion
+		(while (re-search-forward inform-xref-symbol-regexp nil t)
+		  (let* ((data (match-string 8))
+			 (sym (intern-soft data)))
+		    (if sym
+			(cond
+			 ((match-string 3) ; `variable' &c
+			  (and (or (boundp sym) ; `variable' doesn't ensure
                                         ; it's actually bound
-				 (get sym 'variable-documentation))
-			     (inform-xref-button 8 'inform-variable sym)))
-		       ((match-string 4) ; `function' &c
-			(and (fboundp sym) ; similarly
-			     (inform-xref-button 8 'inform-function sym)))
-		       ((match-string 5) ; `face'
-			(and (facep sym)
-			     (inform-xref-button 8 'inform-face sym)))
-		       ((match-string 6)) ; nothing for `symbol'
-		       ((match-string 7)
-			(inform-xref-button 8 'inform-function-def sym))
-		       ((cl-some (lambda (x) (funcall (nth 1 x) sym))
-				 describe-symbol-backends)
-			(inform-xref-button 8 'inform-symbol sym)))))))
+				   (get sym 'variable-documentation))
+			       (inform-xref-button 8 'inform-variable sym)))
+			 ((match-string 4) ; `function' &c
+			  (and (fboundp sym) ; similarly
+			       (inform-xref-button 8 'inform-function sym)))
+			 ((match-string 5) ; `face'
+			  (and (facep sym)
+			       (inform-xref-button 8 'inform-face sym)))
+			 ((match-string 6)) ; nothing for `symbol'
+			 ((match-string 7)
+			  (inform-xref-button 8 'inform-function-def sym))
+			 ((cl-some (lambda (x) (funcall (nth 1 x) sym))
+				   describe-symbol-backends)
+			  (inform-xref-button 8 'inform-symbol sym)))))))
 
 	    ;; (info "(elisp) Eval")
 	    ;; Elisp manual      -- Special Form:
@@ -338,7 +427,7 @@ preceded by the word `variable' or `option'."
 		(let ((sym (intern-soft (match-string 1))))
 		  ;; (message "found %s" sym)
 		  (if (fboundp sym)
-		      (inform-xref-button 1 'inform-function sym)))))))))))
+		      (inform-xref-button 1 'inform-function sym))))))))))))
 
 (provide 'inform)
 ;;; inform.el ends here
