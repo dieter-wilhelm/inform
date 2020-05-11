@@ -42,8 +42,19 @@
    `inform', mark it with `i' for installation and install it with
    `x'.
 
+   The linking is enabled by installing the package.  (It might be
+   necessary kill an old *info* buffer, though).  If you don't want
+   this feature any longer you can set the variable
+   `inform-make-xref-flag' to nil
+
+   #+begin_src  elisp
+   (setq inform-make-xrefs nil)
+   #+end_src
+
+   in you init file.  Or just uninstall the package and restart Emacs.
+
    If you prefer the stable package archive instead of development
-   versions exchange above package source with
+   versions: Exchange above package source with
    #+begin_src elisp
       (add-to-list 'package-archives
       '("melpa-stable" . "https://stable.melpa.org/packages/") t)

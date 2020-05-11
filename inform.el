@@ -7,7 +7,7 @@
 ;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: help, docs, convenience
 ;; Created: 2020-04
-;; Version: 1.3
+;; Version: 1.4
 ;; URL: https://github.com/dieter-wilhelm/inform
 
 ;; This program is free software; you can redistribute it and/or
@@ -77,6 +77,8 @@
 ;; The code uses mostly mechanisms from Emacs' lisp/help-mode.el file.
 
 ;;; Change Log:
+
+;; 1.4:
 
 ;; 1.3:
 
