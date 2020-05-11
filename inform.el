@@ -26,10 +26,16 @@
 
 ;;; Commentary:
 
-;; This library provides links of symbols (functions, variables,
-;; faces) within Emacs' Info viewer to their help documentation.  This
-;; linking is done, when the symbol names in texinfo documentations
-;; (like the Emacs- and Elisp manual) are
+;; This library provides hyperlinks of symbols (functions, variables,
+;; faces) within Emacs' Info viewer to their builtin help
+;; documentation.  This linking is enabled by installing the package.
+;; (It might be necessary kill an old *info* buffer, though).  If you
+;; don't want this feature any longer you can set the variable
+;; `inform-make-xref-flag' to nil or just uninstall the package and
+;; restart Emacs.
+
+;; The linking is done, when the symbol names in texinfo
+;; documentations (like the Emacs- and Elisp manual) are
 
 ;; 1. Quoted symbol names like `quoted-symbol' or:
 
@@ -61,7 +67,8 @@
 
 ;; The link color of symbols - referencing their builtin documentation
 ;; - is distinct from links which are referencing further Info
-;;  documentation.
+;; documentation.  The hyperlink color is NOT changing when you are
+;; visiting the link as it happens for the *Help* links.
 
 ;; Inform is checking if the Info documents are relevant Elisp and
 ;; Emacs related files to avoid false positives.  Please see the
@@ -90,7 +97,7 @@
 ;; different as in *Help* buffers!
 
 ;; Check the application `inform-xref-symbol-regexp' for additional
-;; symbol prefixes without quoting of symbol-names
+;; symbol prefixes without quoting and prefixing of symbol-names.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Does the following belong to customize.el?
