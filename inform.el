@@ -34,6 +34,18 @@
 ;; `inform-make-xref-flag' to nil or just uninstall the package and
 ;; restart Emacs.
 
+;; You can follow the additional links with the usual Info
+;; keybindings.  The customisation variable
+;; `mouse-1-click-follows-link' is influencing the clicking behavior
+;; (and the tooltips) of the links, the variable's default is 450
+;; (milli seconds) setting it to nil means only clicking with mouse-2
+;; is following the link (hint: Drew Adams).
+
+;; The link color of symbols - referencing their builtin documentation
+;; - is distinct from links which are referencing further Info
+;; documentation.  The hyperlink color is NOT changing when you are
+;; visiting the link as it happens for the *Help* links.
+
 ;; The linking is done, when the symbol names in texinfo
 ;; documentations (like the Emacs- and Elisp manual) are
 
@@ -55,30 +67,22 @@
 ;;   -- User Option: variable-name
 ;;   -- Variable:
 
-;;  In any case all symbol names must be known to Emacs, i.e. their
-;; names are found in the variable `obarray'.
-
-;; You can follow the additional links with the usual Info
-;; keybindings.  The customisation variable
-;; `mouse-1-click-follows-link' is influencing the clicking behavior
-;; (and the tooltips) of the links, the variable's default is 450
-;; (milli seconds) setting it to nil means only clicking with mouse-2
-;; is following the link (hint: Drew Adams).
-
-;; The link color of symbols - referencing their builtin documentation
-;; - is distinct from links which are referencing further Info
-;; documentation.  The hyperlink color is NOT changing when you are
-;; visiting the link as it happens for the *Help* links.
-
 ;; Inform is checking if the Info documents are relevant Elisp and
 ;; Emacs related files to avoid false positives.  Please see the
 ;; customization variable `inform-none-emacs-or-elisp-documents'.
 
-;; The code uses mostly mechanisms from Emacs' lisp/help-mode.el file.
+;;  In any case all symbol names must be known to Emacs, i.e. their
+;; names are found in the variable `obarray'.
+
+;; The code reuses, mostly, mechanisms from Emacs' lisp/help-mode.el
+;; file.
 
 ;;; Change Log:
 
 ;; 1.4:
+
+;; Bugfix for distros which have no separate "emacs" info directory.
+;; Adding a fallback variable of elisp or emacs documentation
 
 ;; 1.3:
 
@@ -97,9 +101,6 @@
 
 ;; Currently inconsistent link colors to help buffers: In *info*
 ;; different as in *Help* buffers!
-
-;; Check the application `inform-xref-symbol-regexp' for additional
-;; symbol prefixes without quoting and prefixing of symbol-names.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Does the following belong to customize.el?
@@ -168,18 +169,38 @@ hyperlinks from symbols to their help documentation."
 		 (const :tag "Do not link" nil))
   :group 'info-xref)
 
+(defconst inform-emacs-26.3-info-dir-content
+  '("ada-mode.info" "auth.info" "autotype.info" "bovine.info" "calc.info"
+    "ccmode.info" "cl.info" "dbus.info" "dir" "dired-x.info" "ebrowse.info"
+    "ede.info" "ediff.info" "edt.info" "efaq-w32.info" "efaq.info" "eieio.info"
+    "eintr.info" "elisp.info" "emacs-gnutls.info" "emacs-mime.info"
+    "emacs.info" "epa.info" "erc.info" "ert.info" "eshell.info" "eudc.info"
+    "eww.info" "flymake.info" "forms.info" "gnus.info" "htmlfontify.info"
+    "idlwave.info" "ido.info" "info.info" "mairix-el.info" "message.info"
+    "mh-e.info" "newsticker.info" "nxml-mode.info" "octave-mode.info" "org.info"
+    "pcl-cvs.info" "pgg.info" "rcirc.info" "reftex.info" "remember.info"
+    "sasl.info" "sc.info" "semantic.info" "ses.info" "sieve.info"
+    "smtpmail.info" "speedbar.info" "srecode.info" "todo-mode.info"
+    "tramp.info" "url.info" "vhdl-mode.info" "vip.info" "viper.info"
+    "widget.info" "wisent.info" "woman.info")
+  "List of file names in Emacs-26-3' info/ directory.")
+
 (require 'cl-seq)
 ;; Info-director-list must be initialised
 (info-initialize)
 (defvar inform-emacs-info-dir-content
-  (mapcar 'file-name-nondirectory ;'file-name-sans-extension
-	  (directory-files
-	   (car
-	    ;; search for the main Emacs' info/ directory
-	    (cl-member "[^.]emacs" Info-directory-list :test 'string-match-p))
-	   ;; don't list "." and ".."
-	   t  "[^.]$"))
-  "List of file names in Emacs' own info/ directory.")
+  ;;  (mapcar 'file-name-nondirectory ;'file-name-sans-extension
+  (let ((dir (car (cl-member "[^.]emacs" Info-directory-list
+			     :test 'string-match-p))))
+    ;; It seems some distros (cygwin for sure) don't put Emacs'
+    ;; info documentation in separate "emacs" folder, so we need
+    ;; a static fallback of standard emacs / elisp documentation
+    (if dir
+	(directory-files dir
+			 ;; don't list "." and ".."
+			 nil  "[^.]$")
+      inform-emacs-26.3-info-dir-content))
+  "List of file names in Emacs' info/ directory.")
 
 ;; Turn into regexp list necessary? Stefan
 ;; Switch to alist with explanation of file name?
@@ -212,7 +233,7 @@ directory or in `package-user-dir' and is not included in the
 	 (ndocu inform-none-emacs-or-elisp-documents))
     (and ifile
 	 (or (assoc-string (concat ifi ".info") ifiles)
-	     ;; info files might be archived!
+	     ;; info files might be archived on disc!
 	     (assoc-string (concat ifi ".info.gz") ifiles)
 	     (when pdir (string-match pdir ifile)))
 	 (not (assoc-string ifi ndocu)))))
@@ -391,8 +412,9 @@ cross-referenced, unless preceded by the word `variable' or
 			 ((match-string 5) ; `face'
 			  (and (facep sym)
 			       (inform-xref-button 8 'inform-face sym)))
-			 ((match-string 6)) ; nothing for `symbol'
-			 ((match-string 7)
+			 ((match-string 6)) ; do nothing for
+					    ; `symbol',`program',`property'
+			 ((match-string 7) ; source code
 			  (inform-xref-button 8 'inform-function-def sym))
 			 ((cl-some (lambda (x) (funcall (nth 1 x) sym))
 				   describe-symbol-backends)
