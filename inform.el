@@ -82,6 +82,8 @@
 
 ;; 1.4:
 
+;; Improving autoloading so inform.el is not loaded immediately
+
 ;; Bugfix for distros which have no separate "emacs" info directory.
 ;; Adding a fallback variable of elisp or emacs documentation
 
