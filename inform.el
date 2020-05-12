@@ -29,10 +29,11 @@
 ;; This library provides hyperlinks of symbols (functions, variables,
 ;; faces) within Emacs' Info viewer to their builtin help
 ;; documentation.  This linking is enabled by installing the package.
-;; (It might be necessary kill an old *info* buffer, though).  If you
-;; don't want this feature any longer you can set the variable
-;; `inform-make-xref-flag' to nil or just uninstall the package and
-;; restart Emacs.
+;; (It might be necessary kill an old *info* buffer, though).  Inform
+;; adds - as an autoload instruction - a function to the hook
+;; `Info-selection-hook'.  If you don't want this linking feature any
+;; longer you can set the variable `inform-make-xref-flag' to nil or
+;; just uninstall the package and restart Emacs.
 
 ;; You can follow the additional links with the usual Info
 ;; keybindings.  The customisation variable
@@ -153,7 +154,7 @@
 (require 'help-mode)			;redundant?
 
 ;; activate inform without manually loading it. ;-)
-;;;###autoload (require 'inform)
+;; ;;;###autoload (require 'inform)
 
 ;; this is overwriting lisp/info-xref.el's definition! which sorts it
 ;; in 'docs!
@@ -163,6 +164,7 @@ Check external cross-references in Info documents and provide
 hyperlinks from symbols to their help documentation."
   :group 'info)
 
+;;;###autoload
 (defcustom inform-make-xref-flag t
   "Non-nil means create symbol links in info buffers."
   :type '(choice (const :tag "Create links" t)
@@ -241,7 +243,8 @@ directory or in `package-user-dir' and is not included in the
 (defvar describe-symbol-backends) 	;from help-mode.el
 (defvar help-xref-following)		;dito
 
-;; this toggles the complete linking process
+;; below defcustom toggles the complete linking process
+;;;###autoload
 (when inform-make-xref-flag
   (add-hook 'Info-selection-hook 'inform-make-xrefs))
 
@@ -351,6 +354,7 @@ See `inform-make-xrefs' Don't forget ARGS." ; -TODO-
 The words preceding the quoted symbol can be used in doc strings to
 distinguish references to variables, functions and symbols.")
 
+;;;###autoload
 (defun inform-make-xrefs (&optional buffer)
   "Parse and hyperlink documentation cross-references in the given BUFFER.
 
