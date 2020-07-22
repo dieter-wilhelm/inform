@@ -239,6 +239,7 @@ directory or in `package-user-dir' and is not included in the
 	 (or (assoc-string (concat ifi ".info") ifiles)
 	     ;; info files might be archived on disc!
 	     (assoc-string (concat ifi ".info.gz") ifiles)
+	     (assoc-string (concat ifi ".info.bz2") ifiles)
 	     (when pdir (string-match pdir ifile)))
 	 (not (assoc-string ifi ndocu)))))
 
